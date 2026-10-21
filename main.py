@@ -1,4 +1,4 @@
-
+﻿
 import pygame
 import sys
 
@@ -8,6 +8,7 @@ from robot import Robot
 from task import Task
 from task_generator import TaskGenerator
 from task_queue import TaskQueue
+from collision_manager import update_collision_aware
 
 
 # ==========================================
@@ -353,10 +354,10 @@ while running:
                         robot.set_destination(row, col)
 
 
-    # Update movement and task stages
-    for robot in robots:
-        robot.update()
+    # Collision-aware coordinated movement
+    update_collision_aware(robots)
 
+    # Continue existing task processing
     update_robot_tasks()
 
 
@@ -416,4 +417,6 @@ while running:
 
 pygame.quit()
 sys.exit()
+
+
 
