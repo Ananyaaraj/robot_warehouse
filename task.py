@@ -3,20 +3,66 @@ from warehouse import CELL_SIZE
 
 
 class Task:
-    def __init__(self, task_id, pickup, dropoff, priority=1):
+    """
+    Delivery/transport task with lifecycle tracking, priority levels,
+    and timing metrics.
+    """
+
+    def __init__(self, task_id, pickup, dropoff, priority=1, creation_step=0):
         self.task_id = task_id
-        self.pickup = pickup
-        self.dropoff = dropoff
-        self.priority = priority
+        self.pickup = tuple(pickup)
+        self.dropoff = tuple(dropoff)
+
+        # Normalize priority (can be "HIGH", "MEDIUM", "LOW" or int 1..3)
+        if isinstance(priority, str):
+            p_map = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
+            self.priority_name = priority.upper()
+            self.priority = p_map.get(self.priority_name, 1)
+        else:
+            self.priority = int(priority)
+            p_rev = {3: "HIGH", 2: "MEDIUM", 1: "LOW"}
+            self.priority_name = p_rev.get(self.priority, "MEDIUM")
+
+        self.status = "WAITING"  # WAITING, ASSIGNED, PICKED_UP, COMPLETED, CANCELLED
+        self.assigned_robot = None
+
+        # Timing and metric tracking
+        self.creation_step = creation_step
+        self.assignment_step = None
+        self.pickup_step = None
+        self.completion_step = None
+
+    def assign_robot(self, robot_id, step=None):
+        self.assigned_robot = robot_id
+        self.status = "ASSIGNED"
+        if step is not None:
+            self.assignment_step = step
+
+    def mark_picked_up(self, step=None):
+        self.status = "PICKED_UP"
+        if step is not None:
+            self.pickup_step = step
+
+    def complete(self, step=None):
+        self.status = "COMPLETED"
+        if step is not None:
+            self.completion_step = step
+
+    def cancel(self):
         self.status = "WAITING"
         self.assigned_robot = None
 
-    def assign_robot(self, robot_id):
-        self.assigned_robot = robot_id
-        self.status = "ASSIGNED"
+    @property
+    def total_duration(self):
+        if self.completion_step is not None and self.creation_step is not None:
+            return self.completion_step - self.creation_step
+        return None
 
-    def complete(self):
-        self.status = "COMPLETED"
+    @property
+    def wait_time(self):
+        if self.assignment_step is not None and self.creation_step is not None:
+            return self.assignment_step - self.creation_step
+        return None
 
     def draw(self, screen, offset_x, offset_y):
         pickup_row, pickup_col = self.pickup
@@ -80,7 +126,7 @@ class Task:
 
     def __str__(self):
         return (
-            f"Task {self.task_id}: "
+            f"Task {self.task_id} [{self.priority_name}]: "
             f"{self.pickup} -> {self.dropoff} "
             f"[{self.status}]"
         )

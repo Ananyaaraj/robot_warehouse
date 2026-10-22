@@ -1,0 +1,16 @@
+policy,episode,seed,steps,reward,completed_tasks,throughput_per_1k_steps,total_distance,total_wait_time,conflicts_resolved,swaps_prevented,deadlocks_detected,battery_depletions,mean_inference_ms
+Random-Valid,1,5000,300,79.64,5,16.67,1489,11,0,0,0,0,0.007
+Random-Valid,2,5013,300,59.69,4,13.33,1489,11,0,0,0,0,0.008
+Random-Valid,3,5026,300,99.4,6,20.0,1485,15,1,0,0,0,0.007
+Random-Valid,4,5039,300,174.27,9,30.0,1482,18,1,0,0,0,0.008
+Random-Valid,5,5052,300,74.65,5,16.67,1490,10,0,0,0,0,0.007
+Nearest-Eligible-Robot,1,5000,300,249.34,12,40.0,1489,11,0,0,0,0,0.002
+Nearest-Eligible-Robot,2,5013,300,129.55,7,23.33,1490,10,0,0,0,0,0.002
+Nearest-Eligible-Robot,3,5026,300,204.41,10,33.33,1486,14,0,0,0,0,0.002
+Nearest-Eligible-Robot,4,5039,300,174.49,9,30.0,1489,11,0,0,0,0,0.002
+Nearest-Eligible-Robot,5,5052,300,129.55,7,23.33,1490,10,0,0,0,0,0.002
+Priority-Aware-Greedy,1,5000,300,159.22,8,26.67,1487,13,2,0,0,0,0.002
+Priority-Aware-Greedy,2,5013,300,129.55,7,23.33,1490,10,0,0,0,0,0.002
+Priority-Aware-Greedy,3,5026,300,234.38,11,36.67,1488,12,0,0,0,0,0.002
+Priority-Aware-Greedy,4,5039,300,224.39,11,36.67,1489,11,0,0,0,0,0.002
+Priority-Aware-Greedy,5,5052,300,129.55,7,23.33,1490,10,0,0,0,0,0.002

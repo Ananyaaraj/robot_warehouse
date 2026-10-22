@@ -1,0 +1,4 @@
+policy,episodes,mean_reward,std_reward,mean_completed_tasks,std_completed_tasks,mean_throughput,mean_distance,mean_wait_time,total_swaps_prevented,total_deadlocks,mean_inference_ms
+Random-Valid,5,97.53,45.19,5.8,1.92,19.33,1487.0,13.0,0,0,0.007
+Nearest-Eligible-Robot,5,177.47,51.22,9.0,2.12,30.0,1488.8,11.2,0,0,0.002
+Priority-Aware-Greedy,5,175.42,50.85,8.8,2.05,29.33,1488.8,11.2,0,0,0.002

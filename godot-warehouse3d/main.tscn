@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ecdp1inxx8qf"]
+
+[ext_resource type="Script" uid="uid://532hwi305qch" path="res://warehouse_scene.gd" id="1_ig7tw"]
+
+[node name="Warehouse" type="Node3D" unique_id=2045348164]
+script = ExtResource("1_ig7tw")

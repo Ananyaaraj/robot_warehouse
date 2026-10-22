@@ -1,0 +1,15 @@
+{
+    "algorithm": "MaskablePPO",
+    "seed": 101,
+    "total_timesteps": 30000,
+    "n_steps": 1024,
+    "batch_size": 64,
+    "learning_rate": 0.0003,
+    "num_robots": 5,
+    "num_candidate_tasks": 5,
+    "max_steps_per_episode": 300,
+    "enable_battery": true,
+    "checkpoint_dir": "D:\\multi_robot\\checkpoints\\ppo",
+    "log_dir": "D:\\multi_robot\\logs\\ppo",
+    "timestamp": "2026-10-22 08:41:00"
+}
