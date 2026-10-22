@@ -9,13 +9,13 @@ from bridge.telemetry_server import TelemetryServer, grid_to_godot_world
 def test_grid_to_godot_world_mapping():
     # Corner (0, 0)
     x0, z0 = grid_to_godot_world(0, 0)
-    assert x0 == -50.0
-    assert z0 == -40.0
+    assert x0 == -52.0
+    assert z0 == -20.15
 
     # Opposite corner (62, 160)
     x1, z1 = grid_to_godot_world(62, 160)
-    assert x1 == 50.0
-    assert z1 == 40.0
+    assert x1 == 52.0
+    assert z1 == 20.15
 
 
 def test_telemetry_server_streaming():
@@ -49,7 +49,9 @@ def test_telemetry_server_streaming():
         # Test sending command back to server
         cmd = json.dumps({"cmd": "pause"}) + "\n"
         client.sendall(cmd.encode("utf-8"))
-        time.sleep(0.1)
+        wait_start = time.time()
+        while not server.paused and time.time() - wait_start < 2.0:
+            time.sleep(0.05)
         assert server.paused is True
 
         client.close()

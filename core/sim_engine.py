@@ -187,6 +187,95 @@ class WarehouseSimEngine:
         self.waiting_tasks.append(new_task)
         return new_task
 
+    def find_nearest_walkable(self, r: int, c: int) -> Tuple[int, int]:
+        """Find the nearest walkable cell to the given coordinate."""
+        r = max(0, min(ROWS - 1, int(r)))
+        c = max(0, min(COLS - 1, int(c)))
+        if warehouse[r][c] == 0:
+            return (r, c)
+        for dist in range(1, 20):
+            for dr in range(-dist, dist + 1):
+                for dc in [-dist, dist]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < ROWS and 0 <= nc < COLS and warehouse[nr][nc] == 0:
+                        return (nr, nc)
+            for dc in range(-dist, dist + 1):
+                for dr in [-dist, dist]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < ROWS and 0 <= nc < COLS and warehouse[nr][nc] == 0:
+                        return (nr, nc)
+        return (1, 1)
+
+    def create_custom_task(
+        self,
+        pickup: Tuple[int, int],
+        dropoff: Tuple[int, int],
+        priority: str = "HIGH",
+        robot_id: Optional[int] = None
+    ) -> Optional[Task]:
+        """Create a task with user-specified source and destination."""
+        valid_pickup = self.find_nearest_walkable(pickup[0], pickup[1])
+        valid_dropoff = self.find_nearest_walkable(dropoff[0], dropoff[1])
+        if valid_pickup == valid_dropoff:
+            valid_dropoff = self.find_nearest_walkable(valid_dropoff[0] + 2, valid_dropoff[1] + 2)
+
+        new_task = Task(
+            task_id=len(self.tasks) + 1,
+            pickup=valid_pickup,
+            dropoff=valid_dropoff,
+            priority=priority,
+            creation_step=self.current_step
+        )
+        self.tasks.append(new_task)
+        self.waiting_tasks.append(new_task)
+
+        if robot_id is not None:
+            self.assign_task_to_robot(robot_id, new_task.task_id)
+
+        return new_task
+
+    def assign_next_task_smart(self) -> Optional[Tuple[int, int]]:
+        """
+        Intelligent multi-feature task allocation:
+        Evaluates task priority, robot proximity, past performance,
+        battery health, and fleet workload balancing.
+        """
+        if not self.waiting_tasks:
+            return None
+
+        available_robots = [
+            r for r in self.robots
+            if r.current_task is None and not r.is_faulty and not r.is_charging and r.battery >= 15.0
+        ]
+        if not available_robots:
+            return None
+
+        best_pair = None
+        best_score = float("-inf")
+        sorted_tasks = sorted(self.waiting_tasks, key=lambda t: t.priority, reverse=True)
+
+        for task in sorted_tasks[:5]:
+            for robot in available_robots:
+                dist = abs(robot.row - task.pickup[0]) + abs(robot.col - task.pickup[1])
+                workload_penalty = robot.tasks_completed * 2.5
+                score = (
+                    (task.priority * 35.0)
+                    - (dist * 1.0)
+                    + (robot.battery * 0.25)
+                    + (robot.efficiency_score * 0.2)
+                    - workload_penalty
+                )
+
+                if score > best_score:
+                    best_score = score
+                    best_pair = (robot.robot_id, task.task_id)
+
+        if best_pair is not None:
+            success = self.assign_task_to_robot(best_pair[0], best_pair[1])
+            if success:
+                return best_pair
+        return None
+
     def assign_task_to_robot(self, robot_id: int, task_id: int) -> bool:
         """
         Assign an idle robot to a waiting task. Computes A* path to pickup.
@@ -301,6 +390,7 @@ class WarehouseSimEngine:
             elif robot.task_stage == "GOING_TO_DROPOFF":
                 if current_pos == task.dropoff:
                     task.complete(step=self.current_step)
+                    robot.tasks_completed += 1
                     robot.current_task = None
                     robot.task_stage = "IDLE"
                     self.completed_tasks.append(task)
@@ -326,6 +416,8 @@ class WarehouseSimEngine:
         """Export full simulation snapshot suitable for RL and visualization."""
         robot_data = []
         for r in self.robots:
+            eff = round(100.0 - (r.blocked_steps * 2.0), 1)
+            r.efficiency_score = max(50.0, min(100.0, eff))
             robot_data.append({
                 "id": r.robot_id,
                 "row": r.row,
@@ -338,14 +430,55 @@ class WarehouseSimEngine:
                 "stage": r.task_stage,
                 "task_id": r.current_task.task_id if r.current_task else None,
                 "path_len": len(r.path),
-                "path": list(r.path)
+                "path": list(r.path),
+                "tasks_completed": r.tasks_completed,
+                "efficiency": r.efficiency_score
             })
+
+        active_tasks = []
+        for r in self.robots:
+            if r.current_task is not None:
+                t = r.current_task
+                active_tasks.append({
+                    "id": t.task_id,
+                    "robot_id": r.robot_id,
+                    "pickup": list(t.pickup),
+                    "dropoff": list(t.dropoff),
+                    "priority": t.priority_name,
+                    "stage": r.task_stage,
+                    "status": t.status
+                })
+
+        waiting_tasks = []
+        for t in self.waiting_tasks[:6]:
+            waiting_tasks.append({
+                "id": t.task_id,
+                "pickup": list(t.pickup),
+                "dropoff": list(t.dropoff),
+                "priority": t.priority_name,
+                "status": t.status
+            })
+
+        best_robot = max(
+            self.robots,
+            key=lambda r: (r.tasks_completed, r.efficiency_score, r.battery),
+            default=self.robots[0] if self.robots else None
+        )
+        best_robot_info = {
+            "id": best_robot.robot_id if best_robot else 1,
+            "tasks_completed": best_robot.tasks_completed if best_robot else 0,
+            "efficiency": best_robot.efficiency_score if best_robot else 100.0,
+            "battery": round(best_robot.battery, 1) if best_robot else 100.0
+        }
 
         return {
             "step": self.current_step,
             "robots": robot_data,
+            "active_tasks": active_tasks,
+            "waiting_tasks": waiting_tasks,
             "waiting_tasks_count": len(self.waiting_tasks),
             "completed_tasks_count": len(self.completed_tasks),
             "total_tasks_count": len(self.tasks),
+            "best_robot": best_robot_info,
             "metrics": dict(self.metrics)
         }

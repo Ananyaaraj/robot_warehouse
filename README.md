@@ -167,12 +167,28 @@ Runs Random-Valid, Nearest-Eligible-Robot, and Priority-Aware-Greedy:
 & "C:\Users\Ananyaa\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe" --path "godot-warehouse3d"
 ```
 *In Godot:*
-- Press `1` for Isometric High View
-- Press `2` for Top-down Bird's Eye View
-- Press `3` for Close Follow View on AGV R1
-- Press `Space` to Pause / Resume simulation
-- Press `R` to Reset simulation
-- Use on-screen HUD buttons to adjust simulation speed ($1\times / 2\times$).
+- **Camera Presets:**
+  - Press `1` for Isometric High Overview
+  - Press `2` for Top-down Bird's Eye View
+  - Press `3` to Follow **Robot R1**
+  - Press `4` to Follow **Robot R2**
+  - Press `5` to Follow **Robot R3**
+  - Press `6` to Follow **Robot R4**
+  - Press `7` to Follow **Robot R5**
+  - *(Or simply click any Robot Card or Camera Button on the HUD!)*
+- **3D Source & Destination Beacons:**
+  - 📍 **Green glowing pillars & rings:** Active Pickup locations labeled with Task ID and priority.
+  - 🎯 **Red/Orange glowing beacons:** Active Dropoff destination locations.
+  - ⏳ **Yellow markers:** Queued waiting tasks.
+- **Interactive Task Dispatcher:**
+  - Select Source, Destination, Priority (HIGH, MEDIUM, LOW), and Target AGV (Auto RL or specific Robot R1..R5), then click **🚀 Dispatch Custom Task**!
+- **Fleet Analytics & RL Monitor:**
+  - 🏆 **Best Robot Trophy:** Real-time top performer by deliveries and efficiency.
+  - 🧠 **RL Agent Monitor:** Live decision stream, action masking ratio, step rewards, and cumulative reward.
+- **Playback Controls:**
+  - Press `Space` to Pause / Resume simulation.
+  - Press `R` to Reset simulation.
+  - Speed toggle button: Normal ($1\times$), Slow ($0.5\times$), Fast ($2\times$).
 
 ---
 

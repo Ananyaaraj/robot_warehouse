@@ -36,6 +36,11 @@ class Robot:
         self.battery_drain_idle = 0.01
         self.charge_rate = 1.5
 
+        # Performance & historical metrics
+        self.tasks_completed = 0
+        self.total_mission_steps = 0
+        self.efficiency_score = 100.0
+
     def set_destination(self, row, col, blocked_positions=None):
         if not (0 <= row < ROWS and 0 <= col < COLS):
             return False
